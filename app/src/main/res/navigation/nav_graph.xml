@@ -41,6 +41,12 @@
         <action
             android:id="@+id/action_list_to_detail"
             app:destination="@id/detailFragment" />
+
+        <action
+            android:id="@+id/action_list_to_login_logout"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/nav_graph"
+            app:popUpToInclusive="true"/>
     </fragment>
 
     <fragment
@@ -54,6 +60,7 @@
         android:name="com.example.proyecto_pokeapi_joseavn.ui.DetailFragment"
         android:label="Detalle Pokemon"
         tools:layout="@layout/fragment_detail">
+        <argument android:name="id" app:argType="integer" />
         <argument android:name="name" app:argType="string" />
         <argument android:name="power" app:argType="integer" />
         <argument android:name="type" app:argType="string" />

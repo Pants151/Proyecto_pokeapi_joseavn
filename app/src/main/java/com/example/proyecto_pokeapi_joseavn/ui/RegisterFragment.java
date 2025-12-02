@@ -39,15 +39,25 @@ public class RegisterFragment extends Fragment {
             }
         });
 
-        // Observar mensajes (éxito o error de usuario existente)
+        // Observar mensajes
         viewModel.message.observe(getViewLifecycleOwner(), msg -> {
+            // Verificamos que el mensaje no sea nulo ni esté vacío
             if (msg != null && !msg.isEmpty()) {
                 Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
-                if (msg.contains("éxito")) {
+
+                // Solo si el mensaje contiene "exitoso" (o la palabra clave que usaste en el ViewModel), volvemos atrás
+                if (msg.toLowerCase().contains("exitoso") || msg.toLowerCase().contains("exitosa")) {
                     Navigation.findNavController(view).popBackStack(); // Volver al Login
+                    viewModel.message.setValue(""); // Limpiamos el mensaje para que no salte al volver
                 }
-                viewModel.message.setValue("");
+                // Si el mensaje es "El usuario ya existe" o cualquier error, NO hacemos popBackStack(),
+                // así el usuario se queda en el formulario para corregirlo.
             }
+        });
+
+        // Botón Volver al Login
+        binding.btnBackToLogin.setOnClickListener(v -> {
+            Navigation.findNavController(view).popBackStack();
         });
     }
 }

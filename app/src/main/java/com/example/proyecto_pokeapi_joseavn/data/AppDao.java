@@ -34,4 +34,8 @@ public interface AppDao {
 
     @Query("SELECT COUNT(*) FROM pokemons WHERE userId = :userId AND pokeApiId = :pokeApiId")
     boolean hasPokemon(int userId, int pokeApiId);
+
+    // Borrar un pokemon por su ID de base de datos
+    @Query("DELETE FROM pokemons WHERE id = :id")
+    void deletePokemonById(int id);
 }

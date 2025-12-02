@@ -1,5 +1,6 @@
 package com.example.proyecto_pokeapi_joseavn.ui;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,24 +31,62 @@ public class ListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-        // Configurar RecyclerView
         setupRecyclerView();
 
-        // Observar los pokemons del usuario (Base de Datos Local)
-        viewModel.getMyPokemons().observe(getViewLifecycleOwner(), pokemons -> {
-            adapter.setList(pokemons);
-        });
+        // Verificar que hay usuario (por seguridad, si es null no cargamos nada)
+        if (viewModel.getCurrentUser().getValue() != null) {
+            viewModel.getMyPokemons().observe(getViewLifecycleOwner(), pokemons -> {
+                adapter.setList(pokemons);
+            });
+        }
 
-        // Botón BUSCAR POKEMON -> Navegar a SearchFragment
         binding.btnSearch.setOnClickListener(v ->
                 Navigation.findNavController(view).navigate(R.id.action_list_to_search)
         );
+
+        binding.btnLogout.setOnClickListener(v -> showLogoutDialog());
+
+        // Observar los pokemons del usuario
+        if (viewModel.getCurrentUser().getValue() != null) {
+            viewModel.getMyPokemons().observe(getViewLifecycleOwner(), pokemons -> {
+                adapter.setList(pokemons);
+
+                // LÓGICA DE VISIBILIDAD
+                if (pokemons == null || pokemons.isEmpty()) {
+                    // Lista vacía
+                    binding.tvEmptyList.setVisibility(View.VISIBLE);
+                    binding.tvTeamTitle.setVisibility(View.GONE);
+                    binding.recyclerView.setVisibility(View.GONE);
+                } else {
+                    // Tiene equipo
+                    binding.tvEmptyList.setVisibility(View.GONE);
+                    binding.tvTeamTitle.setVisibility(View.VISIBLE);
+                    binding.recyclerView.setVisibility(View.VISIBLE);
+                }
+            });
+        }
+    }
+
+    private void showLogoutDialog() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Cerrar Sesión")
+                .setMessage("¿Estás seguro de que quieres salir?")
+                .setPositiveButton("Sí", (dialog, which) -> {
+                    // 1. Borramos la sesión del ViewModel
+                    viewModel.logout();
+
+                    // 2. Navegamos al login (Esto ya no provocará el bucle)
+                    Navigation.findNavController(binding.getRoot())
+                            .navigate(R.id.action_list_to_login_logout);
+                })
+                .setNegativeButton("No", null)
+                .show();
     }
 
     private void setupRecyclerView() {
         adapter = new PokemonAdapter(pokemon -> {
-            // Al hacer click en un item, vamos al detalle pasando los datos
             Bundle args = new Bundle();
+            args.putInt("id", pokemon.id);
             args.putString("name", pokemon.name);
             args.putInt("power", pokemon.power);
             args.putString("type", pokemon.type);
