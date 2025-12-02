@@ -3,8 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/bg_retro_input"
+    android:padding="12dp">
 
     <ImageView
         android:id="@+id/ivPokeItem"
@@ -19,14 +22,12 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="Pikachu"
-        android:textSize="20sp"
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:textAllCaps="true"/>
-
-    <TextView
-        android:id="@+id/tvPokePower"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Poder: 100"
-        android:textColor="@android:color/holo_red_dark"/>
-</LinearLayout>
+        android:textAllCaps="true"
+        android:textColor="#000000"/> <TextView
+    android:id="@+id/tvPokePower"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Poder: 100"
+    android:textColor="#CC0000"/> </LinearLayout>

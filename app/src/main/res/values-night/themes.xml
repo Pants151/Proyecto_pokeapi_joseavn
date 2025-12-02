@@ -1,7 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.Proyecto_pokeapi_joseavn" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="android:fontFamily">@font/poke_font</item>
+        <item name="materialButtonStyle">@style/RetroButton</item>
+        <item name="editTextStyle">@style/RetroEditText</item>
+        <item name="android:windowBackground">@drawable/bg_pokedex_screen</item>
     </style>
+
+    <style name="Theme.Proyecto_pokeapi_joseavn" parent="Base.Theme.Proyecto_pokeapi_joseavn" />
 </resources>
