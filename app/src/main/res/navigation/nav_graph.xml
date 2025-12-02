@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.proyecto_pokeapi_joseavn.ui.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_login_to_register"
+            app:destination="@id/registerFragment" />
+
+        <action
+            android:id="@+id/action_login_to_list"
+            app:destination="@id/listFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.proyecto_pokeapi_joseavn.ui.RegisterFragment"
+        android:label="Registro"
+        tools:layout="@layout/fragment_register" />
+
+    <fragment
+        android:id="@+id/listFragment"
+        android:name="com.example.proyecto_pokeapi_joseavn.ui.ListFragment"
+        android:label="Mis Pokemons"
+        tools:layout="@layout/fragment_list">
+
+        <action
+            android:id="@+id/action_list_to_search"
+            app:destination="@id/searchFragment" />
+
+        <action
+            android:id="@+id/action_list_to_detail"
+            app:destination="@id/detailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.example.proyecto_pokeapi_joseavn.ui.SearchFragment"
+        android:label="Buscar Pokemon"
+        tools:layout="@layout/fragment_search" />
+
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="com.example.proyecto_pokeapi_joseavn.ui.DetailFragment"
+        android:label="Detalle Pokemon"
+        tools:layout="@layout/fragment_detail">
+        <argument android:name="name" app:argType="string" />
+        <argument android:name="power" app:argType="integer" />
+        <argument android:name="type" app:argType="string" />
+        <argument android:name="image" app:argType="string" />
+    </fragment>
+
+</navigation>
