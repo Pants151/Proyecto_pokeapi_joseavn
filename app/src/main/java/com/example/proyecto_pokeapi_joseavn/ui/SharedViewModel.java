@@ -1,7 +1,7 @@
 package com.example.proyecto_pokeapi_joseavn.ui;
 
 import android.app.Application;
-import android.os.CountDownTimer; // Importante para la ruleta
+import android.os.CountDownTimer;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
@@ -24,6 +24,7 @@ public class SharedViewModel extends AndroidViewModel {
 
     private AppDatabase db;
     private PokeApiService api;
+    private MutableLiveData<Boolean> isDuplicate = new MutableLiveData<>(false);
 
     // Usuario Logueado
     private MutableLiveData<User> currentUser = new MutableLiveData<>();
@@ -31,7 +32,7 @@ public class SharedViewModel extends AndroidViewModel {
     // Pokemon final encontrado
     private MutableLiveData<PokemonResponse> wildPokemon = new MutableLiveData<>();
 
-    // --- VARIABLES NUEVAS PARA LA RULETA ---
+    // VARIABLES NUEVAS PARA LA RULETA
     private MutableLiveData<String> rouletteImage = new MutableLiveData<>();
     private MutableLiveData<Boolean> isSearching = new MutableLiveData<>(false);
 
@@ -49,13 +50,14 @@ public class SharedViewModel extends AndroidViewModel {
         api = retrofit.create(PokeApiService.class);
     }
 
-    // --- GETTERS QUE TE FALTABAN ---
+    // GETTERS QUE TE FALTABAN
     public LiveData<String> getRouletteImage() { return rouletteImage; }
     public LiveData<Boolean> getIsSearching() { return isSearching; }
     public LiveData<PokemonResponse> getWildPokemon() { return wildPokemon; }
     public LiveData<User> getCurrentUser() { return currentUser; }
+    public LiveData<Boolean> getIsDuplicate() { return isDuplicate; }
 
-    // --- LÓGICA DE BÚSQUEDA CON RULETA ---
+    // LÓGICA DE BÚSQUEDA CON RULETA
     public void searchRandomPokemon() {
         wildPokemon.setValue(null);
         isSearching.setValue(true); // Activamos estado de búsqueda
@@ -77,7 +79,7 @@ public class SharedViewModel extends AndroidViewModel {
         }.start();
     }
 
-    // Auxiliar: Carga imagen temporal para la ruleta
+    // Carga imagen temporal para la ruleta
     private void fetchTempImage(int id) {
         api.getPokemon(id).enqueue(new Callback<PokemonResponse>() {
             @Override
@@ -93,15 +95,24 @@ public class SharedViewModel extends AndroidViewModel {
         });
     }
 
-    // Auxiliar: Carga el pokemon final
+    // Carga el pokemon final
     private void fetchFinalPokemon() {
         int randomId = (int) (Math.random() * 800) + 1;
         api.getPokemon(randomId).enqueue(new Callback<PokemonResponse>() {
             @Override
             public void onResponse(Call<PokemonResponse> call, Response<PokemonResponse> response) {
-                isSearching.setValue(false); // Fin de búsqueda
-                if (response.isSuccessful()) {
-                    wildPokemon.setValue(response.body());
+                isSearching.setValue(false);
+                if (response.isSuccessful() && response.body() != null) {
+                    PokemonResponse pokemon = response.body();
+                    wildPokemon.setValue(pokemon);
+
+                    // Verificacion
+                    User user = currentUser.getValue();
+                    if (user != null) {
+                        // Verificamos si ya lo tiene en la BD
+                        boolean tiene = db.appDao().hasPokemon(user.id, pokemon.id);
+                        isDuplicate.setValue(tiene);
+                    }
                 }
             }
             @Override
@@ -112,7 +123,7 @@ public class SharedViewModel extends AndroidViewModel {
         });
     }
 
-    // --- INTENTAR CAPTURAR ---
+    // INTENTAR CAPTURAR
     public void tryCatchPokemon() {
         PokemonResponse wild = wildPokemon.getValue();
         User user = currentUser.getValue();
@@ -141,7 +152,7 @@ public class SharedViewModel extends AndroidViewModel {
         }
     }
 
-    // --- GESTIÓN DE USUARIOS ---
+    // GESTIÓN DE USUARIOS
     public void logout() {
         currentUser.setValue(null);
         wildPokemon.setValue(null);
@@ -163,6 +174,31 @@ public class SharedViewModel extends AndroidViewModel {
         } else {
             message.setValue("El usuario ya existe");
         }
+    }
+
+    // Metodo para cambiar contraseña
+    public void changePassword(String newPass) {
+        User user = currentUser.getValue();
+        if (user != null) {
+            db.appDao().updateUserPassword(user.id, newPass);
+            message.setValue("Contraseña actualizada correctamente");
+        }
+    }
+
+    // Metodo para borrar cuenta
+    public void deleteAccount() {
+        User user = currentUser.getValue();
+        if (user != null) {
+            db.appDao().deleteUser(user.id);
+            logout(); // Cerramos sesión tras borrar
+            message.setValue("Cuenta eliminada. ¡Hasta pronto!");
+        }
+    }
+
+    // Método para resetear la búsqueda al entrar a la pantalla
+    public void clearSearch() {
+        wildPokemon.setValue(null);
+        isSearching.setValue(false);
     }
 
     public LiveData<List<PokemonEntity>> getMyPokemons() {

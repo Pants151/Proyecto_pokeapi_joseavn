@@ -50,8 +50,6 @@ public class RegisterFragment extends Fragment {
                     Navigation.findNavController(view).popBackStack(); // Volver al Login
                     viewModel.message.setValue(""); // Limpiamos el mensaje para que no salte al volver
                 }
-                // Si el mensaje es "El usuario ya existe" o cualquier error, NO hacemos popBackStack(),
-                // así el usuario se queda en el formulario para corregirlo.
             }
         });
 

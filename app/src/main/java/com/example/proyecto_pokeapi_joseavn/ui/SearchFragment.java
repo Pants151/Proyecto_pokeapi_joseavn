@@ -30,42 +30,63 @@ public class SearchFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         viewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-        // 1. Limpiar estado al entrar para obligar a buscar manualmente
-        // Solo limpiamos si acabamos de entrar (para evitar borrarlo si rotamos pantalla)
+        // Limpiar estado al entrar para obligar a buscar manualmente
         if (savedInstanceState == null) {
+            viewModel.clearSearch();
         }
 
-        // --- NUEVO: Observar el estado de búsqueda (Ruleta) ---
+        // OBSERVAR ESTADO DE BÚSQUEDA
         viewModel.getIsSearching().observe(getViewLifecycleOwner(), isSearching -> {
             if (isSearching) {
-                // ESTADO: GIRANDO RULETA
-                binding.btnInitialSearch.setEnabled(false); // Desactivar botones
+                // GIRANDO RULETA
+                binding.btnInitialSearch.setEnabled(false);
                 binding.btnRetry.setEnabled(false);
-                binding.btnCatch.setEnabled(false);
+                binding.btnCatch.setEnabled(false); // Bloqueamos captura mientras busca
                 binding.pokeName.setText("Buscando...");
                 binding.pokePower.setText("");
             } else {
-                // ESTADO: BÚSQUEDA TERMINADA
-                binding.btnInitialSearch.setEnabled(true); // Reactivar botones
+                // BÚSQUEDA TERMINADA
+                binding.btnInitialSearch.setEnabled(true);
                 binding.btnRetry.setEnabled(true);
-                binding.btnCatch.setEnabled(true);
             }
         });
 
-        // --- NUEVO: Observar las imágenes de la ruleta ---
+        // OBSERVAR SI ES DUPLICADO
+        viewModel.getIsDuplicate().observe(getViewLifecycleOwner(), isDup -> {
+            // Solo actualizamos el botón si NO estamos buscando
+            if (Boolean.FALSE.equals(viewModel.getIsSearching().getValue())) {
+                if (Boolean.TRUE.equals(isDup)) {
+                    // CASO 1: YA LO TIENES, BLOQUEAR Y PONER GRIS
+                    binding.btnCatch.setEnabled(false);
+                    binding.btnCatch.setText("YA LO TIENES");
+                    binding.btnCatch.setBackgroundTintList(
+                            android.content.res.ColorStateList.valueOf(android.graphics.Color.GRAY)
+                    );
+                } else {
+                    // CASO 2: NO LO TIENES, HABILITAR Y PONER COLOR ORIGINAL
+                    if (viewModel.getWildPokemon().getValue() != null) {
+                        binding.btnCatch.setEnabled(true);
+                        binding.btnCatch.setText("CAPTURAR");
+                        binding.btnCatch.setBackgroundTintList(
+                                android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.teal_700, null))
+                        );
+                    }
+                }
+            }
+        });
+
+        // OBSERVAR IMÁGENES RULETA
         viewModel.getRouletteImage().observe(getViewLifecycleOwner(), imageUrl -> {
             if (Boolean.TRUE.equals(viewModel.getIsSearching().getValue()) && imageUrl != null) {
-                // Cargar la imagen temporal de la ruleta
                 Glide.with(this).load(imageUrl).into(binding.pokeImage);
             }
         });
 
-        // Observar el Pokemon final
+        // OBSERVAR POKEMON FINAL
         viewModel.getWildPokemon().observe(getViewLifecycleOwner(), pokemon -> {
-            // Solo actualizar si NO estamos buscando (para que no parpadee al final)
             if (Boolean.FALSE.equals(viewModel.getIsSearching().getValue())) {
                 if (pokemon != null) {
-                    // ESTADO: POKEMON ENCONTRADO FINAL
+                    // MOSTRAR POKEMON
                     binding.btnInitialSearch.setVisibility(View.GONE);
                     binding.layoutActions.setVisibility(View.VISIBLE);
 
@@ -74,10 +95,10 @@ public class SearchFragment extends Fragment {
 
                     Glide.with(this)
                             .load(pokemon.sprites.frontDefault)
-                            .placeholder(R.drawable.pokeball_placeholder) // Placeholder mientras carga el final
+                            .placeholder(R.drawable.pokeball_placeholder)
                             .into(binding.pokeImage);
                 } else if (!Boolean.TRUE.equals(viewModel.getIsSearching().getValue())) {
-                    // ESTADO: INICIAL (Solo si no se está buscando)
+                    // ESTADO INICIAL
                     binding.btnInitialSearch.setVisibility(View.VISIBLE);
                     binding.layoutActions.setVisibility(View.GONE);
 
@@ -88,31 +109,28 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        // 3. Listeners de los Botones
-
-        // Botón: BUSCAR POKEMON ALEATORIO (Inicial)
+        // Listeners
         binding.btnInitialSearch.setOnClickListener(v -> {
-            binding.pokeName.setText("Buscando..."); // Feedback visual inmediato
-            viewModel.searchRandomPokemon();
-        });
-
-        // Botón: VOLVER A BUSCAR (Si no te gusta el que ha salido)
-        binding.btnRetry.setOnClickListener(v -> {
+            resetCatchButtonVisuals(); // Resetear aspecto botón
             binding.pokeName.setText("Buscando...");
             viewModel.searchRandomPokemon();
         });
 
-        // Botón: CAPTURAR
+        binding.btnRetry.setOnClickListener(v -> {
+            resetCatchButtonVisuals(); // Resetear aspecto botón
+            binding.pokeName.setText("Buscando...");
+            viewModel.searchRandomPokemon();
+        });
+
         binding.btnCatch.setOnClickListener(v -> {
             viewModel.tryCatchPokemon();
         });
 
-        // Botón: VER MIS POKEMONS (Volver atrás)
         binding.btnBackToList.setOnClickListener(v -> {
             Navigation.findNavController(view).popBackStack();
         });
 
-        // 4. Mensajes (Toast)
+        // Mensajes
         viewModel.message.observe(getViewLifecycleOwner(), msg -> {
             if (msg != null && !msg.isEmpty()) {
                 Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
@@ -122,5 +140,13 @@ public class SearchFragment extends Fragment {
                 }
             }
         });
+    }
+
+    // Refresca el boton al volver a buscar
+    private void resetCatchButtonVisuals() {
+        binding.btnCatch.setText("CAPTURAR");
+        binding.btnCatch.setBackgroundTintList(
+                android.content.res.ColorStateList.valueOf(getResources().getColor(R.color.teal_700, null))
+        );
     }
 }

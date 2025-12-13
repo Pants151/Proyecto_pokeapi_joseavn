@@ -10,7 +10,7 @@
         android:id="@+id/btnLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Cerrar Sesión"
+        android:text="Opciones"
         android:textSize="12sp"
         android:backgroundTint="@android:color/holo_red_dark"
         app:layout_constraintTop_toTopOf="parent"

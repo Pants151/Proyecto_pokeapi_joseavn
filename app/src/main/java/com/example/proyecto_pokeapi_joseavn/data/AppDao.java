@@ -38,4 +38,12 @@ public interface AppDao {
     // Borrar un pokemon por su ID de base de datos
     @Query("DELETE FROM pokemons WHERE id = :id")
     void deletePokemonById(int id);
+
+    // Borrar usuarios
+    @Query("DELETE FROM users WHERE id = :userId")
+    void deleteUser(int userId);
+
+    // Actualizar usuarios
+    @Query("UPDATE users SET password = :newPassword WHERE id = :userId")
+    void updateUserPassword(int userId, String newPassword);
 }
